@@ -23,7 +23,6 @@ namespace ExcelToText
         {
             string cellValue = null;
             bool stop = false;
-            StringBuilder line = new StringBuilder();
             string textLine = "";
             do
             {
@@ -35,29 +34,25 @@ namespace ExcelToText
                 {
                     excelFilePath = openFileDialog1.FileName;
                     Excel.Application xlApp = new Excel.Application();
-                    //Excel.Workbook xlWorkbook = xlApp.Workbooks.Add();
                     Excel.Workbook xlWorkbook = xlApp.Workbooks.Open(excelFilePath);
                     Excel._Worksheet xlWorksheet = xlWorkbook.Sheets[1];
                     Excel.Range xlRange = xlWorksheet.UsedRange;
                     int rowCount = xlRange.Rows.Count;
                     int colCount = xlRange.Columns.Count;
-                    string[] list = new string[colCount];
-                    //List<string[]> lists = new List<string[]> ();
                     string[][] lists = new string[rowCount][];
                     for (int i = 0; i <= rowCount - 1; i++)
                     {
-                        lists[i] = list;
+                        lists[i] = new string[colCount];
                         for (int j = 0; j <= colCount - 1; j++)
                         {
                             if (xlRange.Cells[i + 1, j + 1] != null && xlRange.Cells[i + 1, j + 1].Value2 != null)
                             {
                                 cellValue = xlRange.Cells[i + 1, j + 1].Value2;
-                                list[j] = cellValue.ToString();
-                                label1.Text += string.Format("{0,-7}", cellValue.ToString());
+                                lists[i][j] = cellValue.ToString();
+                                richTextBox1.Text += string.Format("{0,-15}", cellValue.ToString());
                             }
                         }
-                        lists[i] = list;
-                        label1.Text += "\r\n";
+                        richTextBox1.Text += "\r\n";
                     }
                     xlApp.Workbooks.Close();
                     xlApp.Quit();
@@ -69,10 +64,9 @@ namespace ExcelToText
                     stop = true;
                     for (int i = 0; i <= rowCount - 1; i++)
                     {
-                        list = lists[i];
                         for (int j = 0; j <= colCount - 1; j++)
                         {
-                            textLine += string.Format("{0,-20}", list[j]);
+                            textLine += string.Format("{0,-15}", lists[i][j]);
                         }
                         textLine += "\r\n";
                     }
@@ -84,32 +78,25 @@ namespace ExcelToText
                     {
                         textFilePath = saveFileDialog1.FileName;
                         StreamWriter sw = new StreamWriter(textFilePath);
-                        for (int i = 0; i <= rowCount - 1; i++)
-                        {
-                            list = lists[i];
-                            for (int j = 0; j <= colCount - 1; j++)
-                            {
-                                sw.WriteLine(string.Format("{0,10}", list[j]));
-                            }
-                            sw.WriteLine("\r\n");
-                        }
+                        sw.WriteLine(textLine);
                         sw.Close();
+                        MessageBox.Show("İşlem tamamlandı!", "Başarılı", MessageBoxButtons.OK,MessageBoxIcon.Information);
+                        richTextBox1.Text = "";
                     }
                     else
                     {
                         MessageBox.Show("Dosya kaydedilemedi!", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        richTextBox1.Text = "";
                     }
                 }
                 else
                 {
-                    if (label1.Text == " ")
-                    {
+                    if (richTextBox1.Text == "")
+                    {                        
                         MessageBox.Show("Excel dosyasını seçmediniz!", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        this.button1_Click(sender, e);
                         break;
                     }
-
-                }
+                }           
             }
             while (stop == false);
         }
